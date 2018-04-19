@@ -50,3 +50,13 @@ echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 # Step 2: Installing and configuring services
 /usr/bin/apt-get -y -q update
 /usr/bin/apt-get -y -q install apache2
+echo "<VirtualHost $APACHE_VLAN_IP:80>
+
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+</VirtualHost>" > /etc/apache2/sites-enabled/000-default.conf
+/usr/sbin/service apache2 restart

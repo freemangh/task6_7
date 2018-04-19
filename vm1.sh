@@ -67,5 +67,43 @@ echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 #
 #
 # Step 2: Installing and configuring services
-/usr/bin/apt-get -y update
-/usr/bin/apt-get -y install openssl nginx
+/usr/bin/apt-get -y -q update
+/usr/bin/apt-get -y -q install openssl nginx
+
+echo "Determinating IP for NGINX..."
+NGINX_IP=$(/sbin/ifconfig $EXTERNAL_IF | sed -n '2 p' | awk '{print $2}' | awk -F: '{print $2}')
+echo "NGINX IP: $NGINX_IP"
+
+mkdir -p /etc/ssl/certs
+
+openssl genrsa -out /etc/ssl/certs/root-ca.key 4096
+openssl req -x509 -new -nodes -key /etc/ssl/certs/root-ca.key -sha256 -days 365 -out /etc/ssl/certs/root-ca.crt -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/subjectAltName=DNS:vm1,IP:$NGINX_IP/"
+openssl genrsa -out /etc/ssl/certs/web.key 2048
+openssl req -new -out /etc/ssl/certs/web.csr -key /etc/ssl/certs/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/subjectAltName=DNS:vm1,IP:$NGINX_IP/"
+openssl x509 -req -in /etc/ssl/certs/web.csr -CA /etc/ssl/certs/root-ca.crt -CAkey /etc/ssl/certs/root-ca.key -CAcreateserial -out /etc/ssl/certs/web.crt
+
+cat /etc/ssl/certs/root-ca.crt /etc/ssl/certs/web.crt > /etc/ssl/certs/chain.pem
+
+echo "server {
+	listen $NGINX_IP:$NGINX_PORT ssl default_server;
+	# listen [::]:443 ssl default_server;
+
+	#root /var/www/html;
+
+	# Add index.php to the list if you are using PHP
+	#index index.html index.htm index.nginx-debian.html;
+
+	server_name _;
+	ssl_certificate /etc/ssl/certs/chain.pem;
+	ssl_certificate_key /etc/ssl/certs/root-ca.key;
+
+	location / {
+		proxy_set_header HOST $host;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_pass http://$APACHE_VLAN_IP:80$request_uri;
+	}
+
+}" > /etc/nginx/sites-enabled/default
+/usr/sbin/service nginx restart
