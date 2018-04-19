@@ -37,6 +37,8 @@ APACHE_VLAN_IP: $APACHE_VLAN_IP
 #
 #
 # Step 1: Configuring and bringin up network
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 hostname vm1
 echo vm1 > /etc/hostname
 echo vm1 >> /etc/hosts
@@ -49,17 +51,19 @@ then
 	/sbin/dhclient $EXTERNAL_IF
 else
         echo "Configuring $EXTERNAL_IF with static IP"
-	/bin/ip address add $EXT_IP dev $EXTERNAL_IF
+	/sbin/ifconfig $EXTERNAL_IF $EXT_IP up
 	/bin/ip route add default via $EXT_GW
 fi
 echo "Enabling packet forwarding"
 /sbin/sysctl -w net.ipv4.ip_forward=1
 echo "Enabling NAT on $EXTERNAL_IF"
 /sbin/iptables -t nat -A POSTROUTING -o $EXTERNAL_IF -j MASQUERADE
+echo "Configuring $INTERNAL_IF"
+/sbin/ifconfig $INTERNAL_IF $INT_IP up
 echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 /bin/ip link add link $INTERNAL_IF name $INTERNAL_IF.$VLAN type vlan id $VLAN
 /bin/ip link set dev $INTERNAL_IF.$VLAN up
-/bin/ip address add $APACHE_VLAN_IP/24 dev $INTERNAL_IF.$VLAN
+/sbin/ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP/24 up
 #
 #
 # Step 2: Installing and configuring services

@@ -31,6 +31,8 @@ APACHE_VLAN_IP: $APACHE_VLAN_IP
 #
 #
 # Step 1: Configuring and bringin up network
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 hostname vm2
 echo vm2 > /etc/hostname
 echo vm2 >> /etc/hosts
