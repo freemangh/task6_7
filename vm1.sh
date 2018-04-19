@@ -76,10 +76,32 @@ echo "NGINX IP: $NGINX_IP"
 
 /bin/mkdir -p /etc/ssl/certs
 
+echo "[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+x509_extensions = v3_req
+distinguished_name = dn
+
+[dn]
+C = UA
+ST = Kharkov
+L = Kharkov
+O = Mirantis
+emailAddress = khvastunov@gmail.com
+CN = vm1
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = vm1
+IP.1 = $NGINX_IP" > /etc/ssl/vm1.cnf
+
 openssl genrsa -out /etc/ssl/certs/root-ca.key 4096
-/usr/bin/openssl req -x509 -new -nodes -key /etc/ssl/certs/root-ca.key -sha256 -days 365 -out /etc/ssl/certs/root-ca.crt -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -reqexts SAN -config <(printf "[SAN]\nsubjectAltName=IP:$NGINX_IP,DNS:vm1")
+/usr/bin/openssl req -x509 -new -nodes -key /etc/ssl/certs/root-ca.key -sha256 -days 365 -out /etc/ssl/certs/root-ca.crt -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -config /etc/ssl/vm1.cnf
 /usr/bin/openssl genrsa -out /etc/ssl/certs/web.key 2048
-/usr/bin/openssl req -new -out /etc/ssl/certs/web.csr -key /etc/ssl/certs/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -reqexts SAN -config <(printf "[SAN]\nsubjectAltName=IP:$NGINX_IP,DNS:vm1")
+/usr/bin/openssl req -new -out /etc/ssl/certs/web.csr -key /etc/ssl/certs/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -config /etc/ssl/vm1.cnf
 /usr/bin/openssl x509 -req -in /etc/ssl/certs/web.csr -CA /etc/ssl/certs/root-ca.crt -CAkey /etc/ssl/certs/root-ca.key -CAcreateserial -out /etc/ssl/certs/web.crt
 
 cat /etc/ssl/certs/root-ca.crt /etc/ssl/certs/web.crt > /etc/ssl/certs/chain.pem
