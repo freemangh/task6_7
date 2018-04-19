@@ -74,13 +74,13 @@ echo "Determinating IP for NGINX..."
 NGINX_IP=$(/sbin/ifconfig $EXTERNAL_IF | sed -n '2 p' | awk '{print $2}' | awk -F: '{print $2}')
 echo "NGINX IP: $NGINX_IP"
 
-mkdir -p /etc/ssl/certs
+/bin/mkdir -p /etc/ssl/certs
 
 openssl genrsa -out /etc/ssl/certs/root-ca.key 4096
-openssl req -x509 -new -nodes -key /etc/ssl/certs/root-ca.key -sha256 -days 365 -out /etc/ssl/certs/root-ca.crt -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/subjectAltName=DNS:vm1,IP:$NGINX_IP/"
-openssl genrsa -out /etc/ssl/certs/web.key 2048
-openssl req -new -out /etc/ssl/certs/web.csr -key /etc/ssl/certs/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/subjectAltName=DNS:vm1,IP:$NGINX_IP/"
-openssl x509 -req -in /etc/ssl/certs/web.csr -CA /etc/ssl/certs/root-ca.crt -CAkey /etc/ssl/certs/root-ca.key -CAcreateserial -out /etc/ssl/certs/web.crt
+/usr/bin/openssl req -x509 -new -nodes -key /etc/ssl/certs/root-ca.key -sha256 -days 365 -out /etc/ssl/certs/root-ca.crt -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -reqexts SAN -config <(printf "[SAN]\nsubjectAltName=IP:$NGINX_IP,DNS:vm1")
+/usr/bin/openssl genrsa -out /etc/ssl/certs/web.key 2048
+/usr/bin/openssl req -new -out /etc/ssl/certs/web.csr -key /etc/ssl/certs/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Mirantis/OU=Internship/CN=vm1/" -reqexts SAN -config <(printf "[SAN]\nsubjectAltName=IP:$NGINX_IP,DNS:vm1")
+/usr/bin/openssl x509 -req -in /etc/ssl/certs/web.csr -CA /etc/ssl/certs/root-ca.crt -CAkey /etc/ssl/certs/root-ca.key -CAcreateserial -out /etc/ssl/certs/web.crt
 
 cat /etc/ssl/certs/root-ca.crt /etc/ssl/certs/web.crt > /etc/ssl/certs/chain.pem
 
