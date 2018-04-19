@@ -54,13 +54,13 @@ echo "Determinating IP for APACHE..."
 APACHE_IP=$(/sbin/ifconfig $INTERNAL_IF.$VLAN | sed -n '2 p' | awk '{print $2}' | awk -F: '{print $2}')
 echo "APACHE IP: $APACHE_IP"
 
-echo "<VirtualHost vm2:80>
-
-    ServerAdmin webmaster@localhost
-    DocumentRoot /var/www/html
-
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-</VirtualHost>" > /etc/apache2/sites-enabled/000-default.conf
+#echo "<VirtualHost vm2:80>
+#
+#    ServerAdmin webmaster@localhost
+#    DocumentRoot /var/www/html
+#
+#    ErrorLog ${APACHE_LOG_DIR}/error.log
+#    CustomLog ${APACHE_LOG_DIR}/access.log combined
+#
+#</VirtualHost>" > /etc/apache2/sites-enabled/000-default.conf
 /usr/sbin/service apache2 restart
