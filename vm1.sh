@@ -63,7 +63,7 @@ echo "Configuring $INTERNAL_IF"
 echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 /bin/ip link add link $INTERNAL_IF name $INTERNAL_IF.$VLAN type vlan id $VLAN
 /bin/ip link set dev $INTERNAL_IF.$VLAN up
-/sbin/ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP/24 up
+/sbin/ifconfig $INTERNAL_IF.$VLAN $VLAN_IP/24 up
 #
 #
 # Step 2: Installing and configuring services
