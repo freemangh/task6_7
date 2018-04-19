@@ -38,13 +38,15 @@ echo vm2 > /etc/hostname
 echo vm2 >> /etc/hosts
 /bin/ip link set dev $INTERNAL_IF up
 /bin/ip link set dev $MANAGEMENT_IF up
+echo "Bringin up $INTERNAL_IF with default route"
+/sbin/ifconfig $INTERNAL_IF $INT_IP up
+/bin/ip route add default via $GW_IP
 echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 /bin/ip link add link $INTERNAL_IF name $INTERNAL_IF.$VLAN type vlan id $VLAN
 /bin/ip link set dev $INTERNAL_IF.$VLAN up
-/bin/ip address add $APACHE_VLAN_IP dev $INTERNAL_IF.$VLAN
-/bin/ip route add default via $GW_IP
+/sbin/ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP up
 #
 #
 # Step 2: Installing and configuring services
-/usr/bin/apt-get -y update
-/usr/bin/apt-get -y install apache2
+/usr/bin/apt-get -y -q update
+/usr/bin/apt-get -y -q install apache2
