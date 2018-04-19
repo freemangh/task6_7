@@ -118,11 +118,11 @@ echo "server {
 	ssl_certificate_key /etc/ssl/certs/root-ca.key;
 
 	location / {
-		proxy_set_header HOST $host;
-		proxy_set_header X-Forwarded-Proto $scheme;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_pass http://$APACHE_VLAN_IP:80$request_uri;
+		proxy_set_header HOST \$host;
+		proxy_set_header X-Forwarded-Proto \$scheme;
+		proxy_set_header X-Real-IP \$remote_addr;
+		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+		proxy_pass http://$APACHE_VLAN_IP:80\$request_uri;
 	}
 
 }" > /etc/nginx/sites-enabled/default
