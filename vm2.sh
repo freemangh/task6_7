@@ -53,7 +53,7 @@ echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 echo "Determinating IP for APACHE..."
 APACHE_IP=$(/sbin/ifconfig $INTERNAL_IF.$VLAN | sed -n '2 p' | awk '{print $2}' | awk -F: '{print $2}')
 echo "APACHE IP: $APACHE_IP"
-
+echo "Listen $APACHE_IP:80" >> /etc/apache2/ports.conf
 echo "<VirtualHost vm2:80>
 
     ServerAdmin webmaster@localhost
