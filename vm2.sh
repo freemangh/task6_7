@@ -50,7 +50,10 @@ echo "Creating and bringin up VLAN $VLAN on $INTERNAL_IF"
 # Step 2: Installing and configuring services
 /usr/bin/apt-get -y -q update
 /usr/bin/apt-get -y -q install apache2
-echo "<VirtualHost $APACHE_VLAN_IP:80>
+echo "Determinating IP for APACHE..."
+APACHE_IP=$(/sbin/ifconfig $INTERNAL_IF.$VLAN | sed -n '2 p' | awk '{print $2}' | awk -F: '{print $2}')
+echo "APACHE IP: $APACHE_IP"
+echo "<VirtualHost $APACHE_IP:80>
 
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/html
